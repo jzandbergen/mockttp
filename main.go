@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"net/http"
@@ -19,22 +20,41 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
+func headersToString(headers http.Header) string {
+	b := strings.Builder{}
+	for k, v := range headers {
+		s := fmt.Sprintf("- %v: %v\n", k, strings.Join(v, ","))
+		b.WriteString(s)
+	}
+	return b.String()
+}
+
+func transferEncodingToString(m []string) string {
+	b := strings.Builder{}
+	for _, v := range m {
+		s := fmt.Sprintf("- %v\n", v)
+		b.WriteString(s)
+	}
+	return b.String()
+}
+
 func logRequest(r *http.Request) string {
 
-	b := new(strings.Builder)
+	body, _ := io.ReadAll(r.Body)
 
+	b := new(strings.Builder)
 	table := tablewriter.NewWriter(b)
 	data := [][]string{
 		{"Time", fmt.Sprintf("%v", time.Now())},
 		{"RemoteAddr", r.RemoteAddr},
+		{"Proto", r.Proto},
 		{"Method", r.Method},
 		{"Host", r.Host},
 		{"RequestURI", r.RequestURI},
-		{"Proto", r.Proto},
-		{"Headers", "TODO"},
-		{"Body", "TODO"},
-		{"ContentLength", "TODO"},
-		{"TransferEncoding", "TODO"},
+		{"Headers", headersToString(r.Header)},
+		{"TransferEncoding", transferEncodingToString(r.TransferEncoding)},
+		{"ContentLength", strconv.FormatInt(r.ContentLength, 10)},
+		{"Body", string(body)},
 	}
 	table.AppendBulk(data)
 	table.Render()
