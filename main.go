@@ -33,7 +33,7 @@ func transferEncodingToString(m []string) string {
 	b := strings.Builder{}
 	for _, v := range m {
 		s := fmt.Sprintf("- %v\n", v)
-		b.WriteString(s)
+		b.WriteString(s + "\n")
 	}
 	return b.String()
 }
@@ -44,6 +44,8 @@ func logRequest(r *http.Request) string {
 
 	b := new(strings.Builder)
 	table := tablewriter.NewWriter(b)
+	table.SetAutoWrapText(false)
+	table.SetNewLine("\n")
 	data := [][]string{
 		{"Time", fmt.Sprintf("%v", time.Now())},
 		{"RemoteAddr", r.RemoteAddr},
